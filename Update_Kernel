@@ -1,0 +1,8 @@
+Steps
+1) yum update kernel -y
+2) cat /etc/default/grub # to check the GRUB_DEFAULT parameter
+3) cat /boot/grub2/grubenv #to check which kernel saved for boot
+3.1) uname -a #show kernel used now
+4) awk -F\' /^menuentry/{print\$2} /etc/grub2.cfg #show available kernels
+5) grub2-set-default 2 #select 3rd kernel from the array(starts from 0)
+6) grub2-mkconfig -o /boot/grub2/grub.cfg #to save and apply changes
