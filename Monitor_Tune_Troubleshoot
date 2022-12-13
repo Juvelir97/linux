@@ -1,0 +1,32 @@
+    Network
+================
+#Local port check
+netstat -aon #show all ports
+netstat -tlpn #show Listening ports with PID
+ss
+#Remote port check
+nc -zv <ip> <port>
+telnet <ip> <port>
+#Check bandwith
+iperf3
+
+
+    Memory
+================
+vmstat
+
+     CPU
+================
+ top
+ 
+    Disk
+================
+df -h #show disks usage
+lsblk #show block devices
+iotop #show disk usage real time
+iostat <sec> #disk usage real time
+lsof #show open files
+
+    System
+================
+uptime #show load average
