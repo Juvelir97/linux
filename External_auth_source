@@ -28,3 +28,79 @@
 5) authconfig --update --enablesssd --enablesssdauth --enablemkhomedir (if doesn't exist grep sssd /etc/pam.d/*)
 6) start sssd service
 7) cat /etc/nsswitch.conf
+
+
+
+
+
+Install Required Packages
+
+You're going to need quite a few packages installed to make this server work.
+yum -y install openldap compat-openldap openldap-clients openldap-servers nss-pam-ldapd
+service slapd
+
+Configure LDAP
+With the daemon running, now we can set an LDAP password with:
+slappasswd -h {SSHA} -s password
+
+That will run and print a hash out to the screen. Let's copy that, and then edit initial.ldif. Get into the right directory, then into the file:
+cd LDAP/LDAP
+vim initial.ldif
+On the olcRootPW line, replace {SHAA} with our hash. The line should look something like this:
+
+olcRootPW {SSHA}<OUR_HASH>
+Save that file, and then run this so that it takes effect:
+
+ldapmodify -Y external -H ldapi:/// -f initial.ldif
+We've also got to pull in a few other different configuration files, but we can do it in a one-liner here with a for loop:
+
+for i in cosine nis inetorgperson; do ldapadd -Y external -H ldapi:/// -f  /etc/openldap/schema/$i.ldif; done
+Now we can add the OUs:
+
+ldapadd -x -W -D "cn=ldapadm, dc=la,dc=local" -f ous.ldif
+We'll be prompted for a password, which is going to be the one we set earlier with slappasswd -h {SSHA} -s password.
+
+Now, to add users, run this:
+
+ldapadd -x -W -D "cn=ldapadm, dc=la,dc=local" -f users.ldif
+We'll need our password again, and then we should see users get added.
+
+
+Make Sure PAM Authentication Is Correct
+
+We need to set up PAM to authenticate users correctly. On the server, we can run the following command to do the configuration for you.
+
+authconfig --enableldap --enableldapauth --ldapserver=localhost --ldapbasedn="dc=la,dc=local" --enablemkhomedir --update
+Then we've got to restart the daemon, so that our changes take effect:
+
+systemctl restart nslcd
+Now let's test. Run id tcox, and we should see details on the tcox user. tcox, by the way, was one of the users we set up. You might have seen the username in output from one of the ldapadd commands. Run id pinehead to see if that user was added too.
+
+Now, we can become tcox by running su - tcox. We should end up being that user, and sitting in the home directory (we'll also notice that the directory is created upon the su command getting run too), /home/tcox.
+
+
+Configure the Client
+
+Ok, the server is all set. Now in the client, we need to install some software:
+
+yum install openldap-clients nss-pam-ldapd -y
+We'll run the same kind of authconfig line we did on the server now, changing localhost here to the server's actual IP address:
+
+authconfig --enableldap --enableldapauth --ldapserver=10.0.1.100 --ldapbasedn="dc=la,dc=local" --enablemkhomedir --update
+Now restart the daemon, so that our changes take effect:
+
+systemctl restart nslcd
+Now if we run id for tcox and pinehead like we did on the server, we should see the same kind of output.
+
+
+Set a Password and Test
+
+Let's set a new pinehead password, and test it out. It doesn't matter if we're doing this on the client or the server, since both ways will be actually authenticating to the same LDAP server:
+
+Now, to add users, run this:
+
+ldappasswd -s password -W -D "cn=ldapadm, dc=la,dc=local" -x "uid=pinehead,ou=People,dc=la,dc=local
+Enter a new password at the prompt, then try logging in as pinehead:
+
+ssh pinehead@localhost
+After an authenticity prompt, we should see a Creating '/home/pinehead' message and we're in as pinehead, sitting in this account's home directory.
