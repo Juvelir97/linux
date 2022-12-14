@@ -9,11 +9,14 @@ nc -zv <ip> <port>
 telnet <ip> <port>
 #Check bandwith
 iperf3
+#Network stat
+sar -n
 
 
     Memory
 ================
 vmstat
+sar -r
 
      CPU
 ================
@@ -30,3 +33,4 @@ lsof #show open files
     System
 ================
 uptime #show load average
+sar -u #show today's utilization every 10 min
