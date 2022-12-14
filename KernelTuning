@@ -1,0 +1,16 @@
+Method 1 Tuned
+  0) check active role tuned-adm active
+  1) create a folder with name of a new profile /etc/tuned/my_profile
+  2) create a file tuned.conf with parameters you need
+  3) change active role to your own tuned-adm profile my_profile
+  
+  
+Method 2 Udev rules
+  1) create a file* with name 90-something.rules into a folder /etc/udev/rules.d/
+  2) udevadm control --reload-rules
+  3) udevadm trigger --type=devices --action=change
+  
+  *Example of udev rule file
+      ACTION=="add|change", SUBSYSTEM=="block", ATTR{device/model}=="*",
+      ATTR{queue/scheduler}="deadline"
+
