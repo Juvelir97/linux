@@ -1,0 +1,30 @@
+1)install sssd openldap-clients nscd
+2) vim /etc/sssd/sssd.conf
+      [sssd]
+      config_file_version = 2
+      services = nss, pam
+      domains = LDAP
+
+      [domain/LDAP]
+      cache_credentials = true
+      enumerate = true
+
+      id_provider = ldap
+      auth_provider = ldap
+
+      ldap_id_use_start_tls = true
+      ldap_tls_cacert = /etc/openldap/certs/server.pem #client cert location (for tls connection)
+      ldap_tls_reqcert = allow
+      ldap_uri = ldap://robmartil.mylabserver.com 
+      ldap_search_base = dc-la,dc=local
+      chpass_provider = ldap
+      ldap_chpass_uri = ldap://robmartil.mylabserver.com
+      entry_cache_timeout = 600
+      ldap_network_timeout = 2
+      ldap_group_member = uniquemember
+      
+3) chmod 0600 /etc/sssd/sssd.conf
+4) copy client certificate to /etc/openldap/certs/
+5) authconfig --update --enablesssd --enablesssdauth --enablemkhomedir (if doesn't exist grep sssd /etc/pam.d/*)
+6) start sssd service
+7) cat /etc/nsswitch.conf
