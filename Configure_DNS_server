@@ -1,0 +1,43 @@
+1) yum install bind bind-utils -y
+2) vim /etc/named.conf
+      2.1) adding to the end of a file "include "/etc/named/zones.conf""
+3) vim /etc/resolv.conf
+      3.1) set domain name and ip address of the DNS server
+4) vim /etc/named/zones.conf
+      4.1) example:     zone "example.com" in {
+                              type master;
+                              file "/etc/named/example.com.zone";
+                        };
+                        zone "31.172.in-addr.arpa" in {
+                            type master;
+                            file "/etc/named/31.172.in-addr.arpa.zone";
+                        };
+                        
+5) vim /etc/named/example.com.zone
+      5.1) example:     $TTL 3H
+                        @   IN SOA  ns1.example.com. admin.example.com. (
+                                    0   ; serial
+                                    1D  ; refresh
+                                    1H  ; retry
+                                    1W  ; expire
+                                    3H  ; minimum
+                        )
+
+                        NS  ns1.example.com.
+                        MX  10  mail1.example.com.
+
+                        ns1       IN    A     172.31.110.149
+                        fakename  IN    A     172.31.39.243
+                        mail1     IN    A     172.31.39.243
+
+                        www       IN    CNAME ns1
+                        db1       IN    CNAME fakename
+                        robmarti2 IN    CNAME ns1
+
+6) named-checkconf /etc/named.conf
+7) named-checkzone example.com /etc/named/example.com.zone
+8) systemctl start named
+
+
+
+
