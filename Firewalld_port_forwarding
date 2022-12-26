@@ -1,0 +1,26 @@
+Server1 10.0.1.10 - Current web server
+Server2 10.0.1.20 - In-development web server
+
+1) Create a Zone named `testing` to Handle the Subnet Requests
+On Server1:
+  Create a new firewall zone:
+      firewall-cmd --permanent --new-zone=testing
+  Reload the configuration, to pick up the new zone:
+      firewall-cmd --reload
+  Add the subnet as the source :
+      firewall-cmd --permanent --zone=testing --add-source=10.0.1.0/24
+  Make sure http as a service is added:
+      firewall-cmd --permanent --zone=testing --add-service=http
+  Reload the configuration to pick up these changes:
+      firewall-cmd --reload
+      
+2)You will need to enable masquerading for the zone, in order to permit forwarding:
+      firewall-cmd --permanent --zone=testing --add-masquerade
+  Reload to pick up the new configuration: 
+      firewall-cmd --reload
+      
+3)Add the Forwarding Rule to the Zone
+  You will need to add the rule to forward the traffic coming in to the zone on port 80 out to 10.0.1.20:80:
+      firewall-cmd --permanent --zone=testing --add-forward-port=port=80:proto=tcp:toport=80:toaddr=10.0.1.20
+  Reload the configuration:
+      firewall-cmd --reload      
